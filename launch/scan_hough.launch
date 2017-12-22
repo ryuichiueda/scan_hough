@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="urg_node" name="urg_node" type="urg_node" required="true" >
+        <param name="frame_id" value="base_link"/>
+  </node>
+  <node pkg="scan_hough" name="scan_hough_node" type="scan_hough_node" required="true" output="screen" />
+</launch>
