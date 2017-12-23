@@ -14,6 +14,23 @@ public:
 				space[i][j] = 0;
 	}
 
+	void set(double x, double y)
+	{
+		for(int i=0;i<36;i++){
+			double theta = 3.141592*i*5/180;
+			double rho = x*cos(theta) + y*sin(theta);
+			if(rho >= 1.0){
+				int log_rho = (int)log(rho) + 10;
+				space[i][log_rho]++;
+			}else if(rho <= -1.0){
+				int log_rho = 10 - (int)log(-rho);
+				space[i][log_rho]++;
+			}else
+				space[i][0]++;
+
+		}
+	}
+
 	void print(void)
 	{
 		for(int j=0;j<20;j++){
@@ -27,10 +44,6 @@ public:
 
 HoughSpace hough;
 
-double rho(double x, double y, double theta)
-{
-	return x*cos(theta) + y*sin(theta);
-}
 
 void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
@@ -39,22 +52,14 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 	hough.init();
 	ROS_INFO("START");
 
-	for(int i=0;i<step;i++){
+	for(int i=0;i<step;i+=2){
 		if(std::isnan(msg->ranges[i]))
 			continue;
 
 		double ang = msg->angle_min + msg->angle_increment*step;
-		double x = msg->ranges[i]*cos(ang);
-		double y = msg->ranges[i]*sin(ang);
-
-		//ROS_INFO("%f %f", x, y);
-		
-		for(int j=0;j<36;j++){
-			double theta = 3.141592*j*5/180;
-			double rho = x*cos(theta) + y*sin(theta);
-			int log_rho = rho > 0 ? (int)log(rho) + 10 : (int)log(-rho);
-			hough.space[j][log_rho]++;
-		}
+		double x = msg->ranges[i]*cos(ang)*1000;
+		double y = msg->ranges[i]*sin(ang)*1000;
+		hough.set(x, y);
 	}
 
 	ROS_INFO("END");
