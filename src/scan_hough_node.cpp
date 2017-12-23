@@ -67,7 +67,6 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 
 	hough.init();
 
-	ROS_INFO("START");
 
 	for(int i=0;i<step;i+=2){
 		if(std::isnan(msg->ranges[i]))
@@ -80,6 +79,7 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 	}
 
 	if(not first){
+		ROS_INFO("START");
 		unsigned long int s = ref.compare(&hough);
 		ROS_INFO("END %f",(double)s);
 	}
