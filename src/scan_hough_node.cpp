@@ -40,16 +40,33 @@ public:
 			std::cout << std::endl;
 		}
 	}
+
+	unsigned long int compare(HoughSpace *ref)
+	{
+		unsigned long int score = 0;
+		for(int j=0;j<20;j++){
+			for(int i=0;i<36;i++){
+				int diff = space[i][j] - ref->space[i][j];
+				score += diff*diff;
+			}
+		}
+		return score;
+	}
 };
 
-HoughSpace hough;
+HoughSpace ref;
+HoughSpace latest;
 
 
 void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
+	static bool first = true;
 	int step = (int)floor( ( msg->angle_max - msg->angle_min ) / msg->angle_increment );
 
+	HoughSpace &hough = first ? ref : latest;
+
 	hough.init();
+
 	ROS_INFO("START");
 
 	for(int i=0;i<step;i+=2){
@@ -62,9 +79,12 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 		hough.set(x, y);
 	}
 
-	ROS_INFO("END");
-	hough.print();
+	if(not first){
+		unsigned long int s = ref.compare(&hough);
+		ROS_INFO("END %f",(double)s);
+	}
 
+	first = false;
 }
 
 int main(int argc, char **argv)
